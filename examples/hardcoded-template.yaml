@@ -1,0 +1,69 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: fork-starter-template
+  title: Create Service from Starter Template
+  description: Fork our standard microservice starter template to your namespace
+spec:
+  owner: platform
+  type: service
+  
+  parameters:
+    - title: Service Information
+      required:
+        - serviceName
+        - owner
+      properties:
+        serviceName:
+          title: Service Name
+          type: string
+          description: Name for your new service
+          pattern: '^[a-z0-9-]+$'
+          ui:autofocus: true
+          
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the service
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group, User]
+              
+        description:
+          title: Description
+          type: string
+          description: What does this service do?
+          ui:widget: textarea
+
+  steps:
+    - id: fork
+      name: Fork Starter Template
+      action: gitlab:project:fork
+      input:
+        # Hardcoded source project - the company's starter template
+        projectId: platform/microservice-starter-template
+        token: ${{ secrets.GITLAB_TOKEN }}
+        baseUrl: https://gitlab.mycompany.com
+        # Fork to the user's namespace
+        namespace: ${{ user.entity.metadata.name }}
+        # Use the service name provided by user
+        name: ${{ parameters.serviceName }}
+        path: ${{ parameters.serviceName }}
+        description: ${{ parameters.description }}
+        visibility: private
+        
+    - id: register
+      name: Register in Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.fork.output.httpUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.fork.output.projectUrl }}
+      - title: Open in Catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}

@@ -1,0 +1,84 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: fork-to-team-namespace
+  title: Fork Template to Team Namespace
+  description: Fork a standard template into your team's GitLab group
+spec:
+  owner: platform
+  type: service
+  
+  parameters:
+    - title: Project Configuration
+      required:
+        - projectName
+        - team
+      properties:
+        projectName:
+          title: Project Name
+          type: string
+          description: Name for the new project
+          pattern: '^[a-z0-9-]+$'
+          
+        team:
+          title: Team
+          type: string
+          description: Which team owns this project?
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group]
+              
+        template:
+          title: Template to Use
+          type: string
+          description: Choose which starter template to fork
+          enum:
+            - platform/nodejs-api-template
+            - platform/python-service-template
+            - platform/react-frontend-template
+          enumNames:
+            - Node.js API Service
+            - Python Microservice
+            - React Frontend
+          default: platform/nodejs-api-template
+
+  steps:
+    - id: fork
+      name: Fork Template to Team Namespace
+      action: gitlab:project:fork
+      input:
+        # User selects from predefined templates
+        projectId: ${{ parameters.template }}
+        token: ${{ secrets.GITLAB_TOKEN }}
+        baseUrl: https://gitlab.mycompany.com
+        # Fork to the team's GitLab group (hardcoded pattern)
+        namespace: teams/${{ parameters.team }}
+        name: ${{ parameters.projectName }}
+        path: ${{ parameters.projectName }}
+        description: Created from ${{ parameters.template }} template
+        visibility: internal
+        
+    - id: log
+      name: Log Success
+      action: debug:log
+      input:
+        message: |
+          Forked ${{ parameters.template }} to teams/${{ parameters.team }}/${{ parameters.projectName }}
+
+  output:
+    links:
+      - title: View Project
+        url: ${{ steps.fork.output.projectUrl }}
+    text:
+      - title: Next Steps
+        content: |
+          ## Your project is ready!
+          
+          The template has been forked to your team's namespace:
+          **teams/${{ parameters.team }}/${{ parameters.projectName }}**
+          
+          Clone it to get started:
+          ```bash
+          git clone ${{ steps.fork.output.sshUrl }}
+          ```

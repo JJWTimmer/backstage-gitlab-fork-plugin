@@ -1,0 +1,79 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: fork-from-catalog
+  title: Fork from Template Catalog
+  description: Choose from a curated list of templates to fork
+spec:
+  owner: platform
+  type: service
+  
+  parameters:
+    - title: Select Template
+      required:
+        - templateChoice
+        - projectName
+      properties:
+        templateChoice:
+          title: Template
+          type: string
+          description: Choose a template to fork
+          enum:
+            - '123'
+            - '456'
+            - '789'
+          enumNames:
+            - 'Microservice Starter (Node.js + Express)'
+            - 'Data Pipeline (Python + Airflow)'
+            - 'Frontend App (React + TypeScript)'
+          ui:autofocus: true
+          
+        projectName:
+          title: Project Name
+          type: string
+          description: Name for your new project
+          
+    - title: Deployment Configuration
+      properties:
+        environment:
+          title: Target Environment
+          type: string
+          enum:
+            - development
+            - staging
+            - production
+          default: development
+
+  steps:
+    - id: fork
+      name: Fork Selected Template
+      action: gitlab:project:fork
+      input:
+        # Use the project ID from the dropdown selection
+        projectId: ${{ parameters.templateChoice }}
+        token: ${{ secrets.GITLAB_TOKEN }}
+        baseUrl: https://gitlab.mycompany.com
+        # Fork to user's personal namespace
+        name: ${{ parameters.projectName }}
+        description: Forked from template for ${{ parameters.environment }} environment
+        visibility: private
+        
+    - id: create-env-file
+      name: Create Environment Config
+      action: fetch:plain:file
+      input:
+        url: ${{ steps.fork.output.httpUrl }}/raw/main/.env.example
+        targetPath: .env
+        
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.fork.output.projectUrl }}
+    text:
+      - title: Project Details
+        content: |
+          Project forked successfully!
+          
+          **Name:** ${{ parameters.projectName }}
+          **Environment:** ${{ parameters.environment }}
+          **Location:** ${{ steps.fork.output.projectPath }}

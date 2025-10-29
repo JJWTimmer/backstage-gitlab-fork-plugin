@@ -1,0 +1,50 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: fork-user-choice
+  title: Fork Any GitLab Project
+  description: Let users choose which GitLab project to fork
+spec:
+  owner: platform
+  type: service
+  
+  parameters:
+    - title: Choose Project to Fork
+      required:
+        - projectId
+      properties:
+        projectId:
+          title: Project to Fork
+          type: string
+          description: Enter the project ID or path (e.g., "123" or "gitlab-org/gitlab")
+          ui:autofocus: true
+          
+        customName:
+          title: Custom Name (optional)
+          type: string
+          description: Give your fork a custom name
+          
+        visibility:
+          title: Visibility
+          type: string
+          enum:
+            - private
+            - internal
+            - public
+          default: private
+
+  steps:
+    - id: fork
+      name: Fork Selected Project
+      action: gitlab:project:fork
+      input:
+        projectId: ${{ parameters.projectId }}
+        token: ${{ secrets.GITLAB_TOKEN }}
+        baseUrl: https://gitlab.mycompany.com
+        name: ${{ parameters.customName }}
+        visibility: ${{ parameters.visibility }}
+
+  output:
+    links:
+      - title: Your Forked Repository
+        url: ${{ steps.fork.output.projectUrl }}

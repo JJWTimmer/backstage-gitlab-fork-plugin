@@ -1,0 +1,136 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: fork-gitlab-project-example
+  title: Fork GitLab Project Example
+  description: Example template demonstrating how to fork a GitLab project
+  tags:
+    - gitlab
+    - fork
+spec:
+  owner: platform
+  type: service
+  
+  parameters:
+    - title: Source Project
+      required:
+        - projectId
+      properties:
+        projectId:
+          title: Project ID or Path
+          type: string
+          description: The ID or URL-encoded path of the project to fork (e.g., "123" or "group/project")
+          ui:autofocus: true
+          
+    - title: GitLab Configuration
+      required:
+        - token
+        - baseUrl
+      properties:
+        token:
+          title: GitLab Token
+          type: string
+          description: Personal access token with api scope
+          ui:widget: password
+          ui:field: Secret
+          
+        baseUrl:
+          title: GitLab Base URL
+          type: string
+          description: Base URL of your GitLab instance
+          default: https://gitlab.com
+          
+    - title: Fork Configuration
+      properties:
+        namespace:
+          title: Target Namespace
+          type: string
+          description: The ID or path of the namespace to fork to (leave empty for your user namespace)
+          
+        name:
+          title: Project Name
+          type: string
+          description: Name for the forked project (leave empty to use original name)
+          
+        path:
+          title: Project Path
+          type: string
+          description: URL path for the forked project (leave empty to use original path)
+          
+        description:
+          title: Description
+          type: string
+          description: Description for the forked project
+          ui:widget: textarea
+          ui:options:
+            rows: 3
+          
+        visibility:
+          title: Visibility
+          type: string
+          description: Visibility level of the forked project
+          enum:
+            - private
+            - internal
+            - public
+          enumNames:
+            - Private
+            - Internal
+            - Public
+          default: private
+
+  steps:
+    - id: fork
+      name: Fork GitLab Project
+      action: gitlab:project:fork
+      input:
+        projectId: ${{ parameters.projectId }}
+        token: ${{ parameters.token }}
+        baseUrl: ${{ parameters.baseUrl }}
+        namespace: ${{ parameters.namespace }}
+        name: ${{ parameters.name }}
+        path: ${{ parameters.path }}
+        description: ${{ parameters.description }}
+        visibility: ${{ parameters.visibility }}
+        
+    - id: log
+      name: Log Fork Details
+      action: debug:log
+      input:
+        message: |
+          Successfully forked project!
+          Project ID: ${{ steps.fork.output.projectId }}
+          Project Path: ${{ steps.fork.output.projectPath }}
+          Web URL: ${{ steps.fork.output.projectUrl }}
+
+  output:
+    links:
+      - title: Open Forked Repository
+        url: ${{ steps.fork.output.projectUrl }}
+        icon: gitlab
+      - title: Clone via SSH
+        url: ${{ steps.fork.output.sshUrl }}
+      - title: Clone via HTTPS
+        url: ${{ steps.fork.output.httpUrl }}
+    text:
+      - title: Project Information
+        content: |
+          ## Forked Project Details
+          
+          **Project ID:** ${{ steps.fork.output.projectId }}
+          
+          **Project Path:** ${{ steps.fork.output.projectPath }}
+          
+          **Web URL:** ${{ steps.fork.output.projectUrl }}
+          
+          ### Clone Commands
+          
+          SSH:
+          ```bash
+          git clone ${{ steps.fork.output.sshUrl }}
+          ```
+          
+          HTTPS:
+          ```bash
+          git clone ${{ steps.fork.output.httpUrl }}
+          ```
