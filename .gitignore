@@ -1,8 +1,56 @@
+# Dependencies
 node_modules/
+jspm_packages/
+
+# Build outputs
 dist/
-*.log
-.DS_Store
+dist-types/
+build/
 *.tsbuildinfo
+
+# Testing
 coverage/
+*.lcov
+.nyc_output
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Environment variables
 .env
 .env.local
+.env.test
+.envrc
+
+# IDE and Editor files
+.DS_Store
+.idea/
+*.iml
+.vscode/
+*.swp
+*.session.sql
+
+# Claude Code (optional - remove if you want to share Claude settings)
+.claude/
+
+# Yarn (for library packages, lock file is typically ignored)
+yarn.lock
+
+# Cache
+.npm
+.eslintcache
+.rpt2_cache/
+.rts2_cache_*
+
+# Temporary files
+*.tmp
+tsconfig.tmp.json
+nul
+
+# OS files
+Thumbs.db
