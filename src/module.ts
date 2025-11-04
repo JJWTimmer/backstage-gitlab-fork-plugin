@@ -14,10 +14,8 @@ export const scaffolderModuleGitlabFork = createBackendModule({
       },
       async init({ scaffolder, config }) {
         const integrations = ScmIntegrations.fromConfig(config);
-        
-        scaffolder.addActions(
-          createGitlabForkAction({ integrations })
-        );
+
+        scaffolder.addActions(createGitlabForkAction({ integrations }));
       },
     });
   },

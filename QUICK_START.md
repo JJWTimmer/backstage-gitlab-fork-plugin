@@ -56,7 +56,7 @@ metadata:
 spec:
   owner: platform
   type: service
-  
+
   parameters:
     - title: Service Info
       required:
@@ -101,11 +101,11 @@ catalog:
 ```yaml
 action: gitlab:project:fork
 input:
-  projectId: platform/starter-template  # Hardcoded
+  projectId: platform/starter-template # Hardcoded
   token: ${{ secrets.GITLAB_TOKEN }}
   baseUrl: https://gitlab.mycompany.com
-  namespace: ${{ user.entity.metadata.name }}  # User's namespace
-  name: ${{ parameters.projectName }}  # User chooses name
+  namespace: ${{ user.entity.metadata.name }} # User's namespace
+  name: ${{ parameters.projectName }} # User chooses name
 ```
 
 ### Scenario 2: Fork to Team Namespace
@@ -116,7 +116,7 @@ input:
   projectId: platform/starter-template
   token: ${{ secrets.GITLAB_TOKEN }}
   baseUrl: https://gitlab.mycompany.com
-  namespace: teams/${{ parameters.team }}  # Team's group
+  namespace: teams/${{ parameters.team }} # Team's group
   name: ${{ parameters.projectName }}
 ```
 
@@ -134,7 +134,7 @@ parameters:
 steps:
   - action: gitlab:project:fork
     input:
-      projectId: ${{ parameters.template }}  # User's choice
+      projectId: ${{ parameters.template }} # User's choice
       token: ${{ secrets.GITLAB_TOKEN }}
 ```
 
@@ -150,7 +150,7 @@ parameters:
 steps:
   - action: gitlab:project:fork
     input:
-      projectId: ${{ parameters.projectId }}  # User provides
+      projectId: ${{ parameters.projectId }} # User provides
       token: ${{ secrets.GITLAB_TOKEN }}
 ```
 
@@ -165,7 +165,7 @@ steps:
     input:
       projectId: my-template
       token: ${{ secrets.GITLAB_TOKEN }}
-      
+
   - id: register
     action: catalog:register
     input:
@@ -182,6 +182,7 @@ output:
 ```
 
 Available outputs:
+
 - `projectId` - Numeric project ID
 - `projectPath` - Full path (e.g., `namespace/project`)
 - `projectUrl` - Web URL
@@ -191,26 +192,30 @@ Available outputs:
 ## Troubleshooting
 
 **Token Error?**
+
 - Ensure token has `api` scope
 - Check token is set in environment: `echo $GITLAB_TOKEN`
 
 **Project Not Found?**
+
 - Verify project ID/path is correct
 - Ensure token has access to source project
 
 **Permission Denied?**
+
 - Token must have permission to create projects in target namespace
 - For group namespaces, need at least Developer role
 
 ## Next Steps
 
 - See `examples/` directory for more template patterns
-- Read `EXAMPLES.md` for advanced use cases
 - Check `README.md` for full API documentation
+- Review `USAGE_SUMMARY.md` for common use cases
 
 ## Support
 
 For issues or questions:
+
 1. Check the examples in `examples/` directory
 2. Review the full README.md
 3. Check Backstage logs: `yarn dev` in backend directory

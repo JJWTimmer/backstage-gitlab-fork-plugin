@@ -47,11 +47,7 @@ interface GitlabProject {
 }
 
 export function createGitlabForkAction(options: GitlabForkActionOptions) {
-  const {
-    integrations,
-    pollingIntervalMs = 2000,
-    maxPollingAttempts = 30,
-  } = options;
+  const { pollingIntervalMs = 2000, maxPollingAttempts = 30 } = options;
 
   return createTemplateAction({
     id: 'gitlab:project:fork',
@@ -154,11 +150,22 @@ export function createGitlabForkAction(options: GitlabForkActionOptions) {
         defaultBranch,
       } = ctx.input;
 
-      ctx.logger.info(`Forking GitLab project ${projectId} on ${baseUrl}`);
+      // Type assertions for input validation
+      if (typeof token !== 'string') {
+        throw new InputError('token must be a string');
+      }
+
+      if (typeof projectId !== 'string' && typeof projectId !== 'number') {
+        throw new InputError('projectId must be a string or number');
+      }
+
+      const gitlabHost = typeof baseUrl === 'string' ? baseUrl : 'https://gitlab.com';
+
+      ctx.logger.info(`Forking GitLab project ${projectId} on ${gitlabHost}`);
 
       try {
         const api = new Gitlab({
-          host: baseUrl,
+          host: gitlabHost,
           token: token,
         });
 
@@ -167,20 +174,25 @@ export function createGitlabForkAction(options: GitlabForkActionOptions) {
         if (namespace !== undefined) {
           if (typeof namespace === 'number') {
             forkOptions.namespace_id = namespace;
-          } else {
+          } else if (typeof namespace === 'string') {
             forkOptions.namespace_path = namespace;
           }
         }
 
-        if (name) forkOptions.name = name;
-        if (path) forkOptions.path = path;
-        if (description) forkOptions.description = description;
-        if (visibility) forkOptions.visibility = visibility as 'private' | 'internal' | 'public';
-        if (defaultBranch) forkOptions.default_branch = defaultBranch;
+        if (typeof name === 'string') forkOptions.name = name;
+        if (typeof path === 'string') forkOptions.path = path;
+        if (typeof description === 'string') forkOptions.description = description;
+        if (
+          typeof visibility === 'string' &&
+          (visibility === 'private' || visibility === 'internal' || visibility === 'public')
+        ) {
+          forkOptions.visibility = visibility;
+        }
+        if (typeof defaultBranch === 'string') forkOptions.default_branch = defaultBranch;
 
         ctx.logger.info('Creating fork with options:', forkOptions);
 
-        const forkedProject = await api.Projects.fork(projectId, forkOptions) as GitlabProject;
+        const forkedProject = (await api.Projects.fork(projectId, forkOptions)) as GitlabProject;
 
         if (!forkedProject) {
           throw new InputError('Failed to fork project - no response from GitLab API');
@@ -194,14 +206,18 @@ export function createGitlabForkAction(options: GitlabForkActionOptions) {
 
         while (forkStatus.import_status === 'started' || forkStatus.import_status === 'scheduled') {
           if (attempts >= maxPollingAttempts) {
-            ctx.logger.warn(`Fork is still in progress after ${maxPollingAttempts} attempts (${(maxPollingAttempts * pollingIntervalMs) / 1000}s)`);
+            ctx.logger.warn(
+              `Fork is still in progress after ${maxPollingAttempts} attempts (${(maxPollingAttempts * pollingIntervalMs) / 1000}s)`,
+            );
             break;
           }
 
-          ctx.logger.info(`Fork status: ${forkStatus.import_status}, waiting ${pollingIntervalMs}ms...`);
+          ctx.logger.info(
+            `Fork status: ${forkStatus.import_status}, waiting ${pollingIntervalMs}ms...`,
+          );
           await new Promise(resolve => setTimeout(resolve, pollingIntervalMs));
 
-          forkStatus = await api.Projects.show(forkedProject.id) as GitlabProject;
+          forkStatus = (await api.Projects.show(forkedProject.id)) as GitlabProject;
           attempts++;
         }
 
@@ -216,7 +232,6 @@ export function createGitlabForkAction(options: GitlabForkActionOptions) {
         ctx.output('projectUrl', forkedProject.web_url);
         ctx.output('sshUrl', forkedProject.ssh_url_to_repo);
         ctx.output('httpUrl', forkedProject.http_url_to_repo);
-
       } catch (error) {
         if (error instanceof InputError) {
           throw error;
@@ -225,10 +240,14 @@ export function createGitlabForkAction(options: GitlabForkActionOptions) {
           // Distinguish between user errors and system errors
           const message = error.message;
           if (message.includes('404') || message.includes('not found')) {
-            throw new InputError(`GitLab project not found: ${projectId}. Please verify the project ID/path and token permissions.`);
+            throw new InputError(
+              `GitLab project not found: ${projectId}. Please verify the project ID/path and token permissions.`,
+            );
           }
           if (message.includes('401') || message.includes('403')) {
-            throw new InputError(`GitLab authentication failed. Please verify your token has the 'api' scope and necessary permissions.`);
+            throw new InputError(
+              `GitLab authentication failed. Please verify your token has the 'api' scope and necessary permissions.`,
+            );
           }
           throw new InputError(`Failed to fork GitLab project: ${message}`);
         }

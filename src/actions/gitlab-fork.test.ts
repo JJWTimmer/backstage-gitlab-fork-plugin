@@ -47,7 +47,7 @@ describe('createGitlabForkAction', () => {
           },
         ],
       },
-    })
+    }),
   );
 
   it('should create a GitLab fork action', () => {
@@ -70,13 +70,13 @@ describe('createGitlabForkAction', () => {
     const action = createGitlabForkAction({ integrations });
     await action.handler(mockContext as any);
 
-    expect(mockGitlabInstance.Projects.fork).toHaveBeenCalledWith(
-      'test-group/test-project',
-      {}
-    );
+    expect(mockGitlabInstance.Projects.fork).toHaveBeenCalledWith('test-group/test-project', {});
     expect(mockContext.output).toHaveBeenCalledWith('projectId', 123);
     expect(mockContext.output).toHaveBeenCalledWith('projectPath', 'user/forked-project');
-    expect(mockContext.output).toHaveBeenCalledWith('projectUrl', 'https://gitlab.com/user/forked-project');
+    expect(mockContext.output).toHaveBeenCalledWith(
+      'projectUrl',
+      'https://gitlab.com/user/forked-project',
+    );
   });
 
   it('should fork with all optional parameters', async () => {
@@ -105,17 +105,14 @@ describe('createGitlabForkAction', () => {
       },
     } as any);
 
-    expect(mockGitlabInstance.Projects.fork).toHaveBeenCalledWith(
-      'test-group/test-project',
-      {
-        namespace_path: 'team',
-        name: 'custom-project',
-        path: 'custom-project',
-        description: 'Test description',
-        visibility: 'private',
-        default_branch: 'main',
-      }
-    );
+    expect(mockGitlabInstance.Projects.fork).toHaveBeenCalledWith('test-group/test-project', {
+      namespace_path: 'team',
+      name: 'custom-project',
+      path: 'custom-project',
+      description: 'Test description',
+      visibility: 'private',
+      default_branch: 'main',
+    });
   });
 
   it('should use namespace_id for numeric namespace', async () => {
@@ -139,12 +136,9 @@ describe('createGitlabForkAction', () => {
       },
     } as any);
 
-    expect(mockGitlabInstance.Projects.fork).toHaveBeenCalledWith(
-      'test-group/test-project',
-      {
-        namespace_id: 42,
-      }
-    );
+    expect(mockGitlabInstance.Projects.fork).toHaveBeenCalledWith('test-group/test-project', {
+      namespace_id: 42,
+    });
   });
 
   it('should poll for fork completion', async () => {
@@ -195,31 +189,27 @@ describe('createGitlabForkAction', () => {
     const action = createGitlabForkAction({ integrations });
 
     await expect(action.handler(mockContext as any)).rejects.toThrow(
-      'Fork failed: Fork failed due to size limit'
+      'Fork failed: Fork failed due to size limit',
     );
   });
 
   it('should handle 404 errors with helpful message', async () => {
-    mockGitlabInstance.Projects.fork.mockRejectedValue(
-      new Error('404 - Project not found')
-    );
+    mockGitlabInstance.Projects.fork.mockRejectedValue(new Error('404 - Project not found'));
 
     const action = createGitlabForkAction({ integrations });
 
     await expect(action.handler(mockContext as any)).rejects.toThrow(
-      /GitLab project not found.*Please verify the project ID\/path/
+      /GitLab project not found.*Please verify the project ID\/path/,
     );
   });
 
   it('should handle 401/403 errors with helpful message', async () => {
-    mockGitlabInstance.Projects.fork.mockRejectedValue(
-      new Error('401 Unauthorized')
-    );
+    mockGitlabInstance.Projects.fork.mockRejectedValue(new Error('401 Unauthorized'));
 
     const action = createGitlabForkAction({ integrations });
 
     await expect(action.handler(mockContext as any)).rejects.toThrow(
-      /GitLab authentication failed.*verify your token/
+      /GitLab authentication failed.*verify your token/,
     );
   });
 
@@ -245,7 +235,7 @@ describe('createGitlabForkAction', () => {
     await action.handler(mockContext as any);
 
     expect(mockContext.logger.warn).toHaveBeenCalledWith(
-      expect.stringContaining('Fork is still in progress')
+      expect.stringContaining('Fork is still in progress'),
     );
     // Should still output results even if polling times out
     expect(mockContext.output).toHaveBeenCalledWith('projectId', 123);
@@ -258,7 +248,7 @@ describe('createGitlabForkAction', () => {
 
     await expect(action.handler(mockContext as any)).rejects.toThrow(InputError);
     await expect(action.handler(mockContext as any)).rejects.toThrow(
-      'Failed to fork project - no response from GitLab API'
+      'Failed to fork project - no response from GitLab API',
     );
   });
 
