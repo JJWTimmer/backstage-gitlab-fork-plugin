@@ -7,7 +7,10 @@ This is a Backstage scaffolder backend module that provides an action to fork re
 - Fork projects on GitLab.com or self-hosted GitLab instances
 - Support for custom namespace, name, path, and visibility settings
 - Automatic polling to wait for fork completion
-- Full TypeScript support with Zod schema validation
+- Full TypeScript support with comprehensive type definitions
+- Configurable polling intervals and timeout settings
+- Enhanced error handling with user-friendly messages
+- Comprehensive test coverage
 - Compatible with Backstage's new backend system
 
 ## Installation
@@ -291,10 +294,25 @@ For self-hosted GitLab instances, simply provide the `baseUrl` parameter:
 ## Error Handling
 
 The action includes comprehensive error handling:
-- Validates all inputs using Zod schemas
+- Validates all inputs using JSON Schema
 - Polls the fork status and waits for completion
-- Provides clear error messages for common issues
+- Provides clear, user-friendly error messages for common issues (404, 401, 403)
+- Distinguishes between user errors and system errors
 - Throws `InputError` for user-facing errors
+
+## Configuration Options
+
+The action supports configuration options for custom polling behavior:
+
+```typescript
+import { createGitlabForkAction } from '@internal/backstage-scaffolder-backend-module-gitlab-fork';
+
+const action = createGitlabForkAction({
+  integrations,
+  pollingIntervalMs: 3000,      // Poll every 3 seconds (default: 2000)
+  maxPollingAttempts: 50,        // Maximum 50 attempts (default: 30)
+});
+```
 
 ## Development
 
