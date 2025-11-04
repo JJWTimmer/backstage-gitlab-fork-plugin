@@ -4,10 +4,54 @@ Get started with the GitLab fork action in 5 minutes.
 
 ## Installation
 
+Choose the method that works best for you:
+
+### Option 1: From npm (when published)
+
 ```bash
-# In your Backstage backend directory
 yarn workspace backend add @internal/backstage-scaffolder-backend-module-gitlab-fork
 ```
+
+### Option 2: From Git Repository (easiest for development)
+
+```bash
+# Install directly from GitHub
+yarn workspace backend add @internal/backstage-scaffolder-backend-module-gitlab-fork@github:JJWTimmer/backstage-gitlab-fork-plugin
+
+# Or from a specific branch
+yarn workspace backend add @internal/backstage-scaffolder-backend-module-gitlab-fork@github:JJWTimmer/backstage-gitlab-fork-plugin#main
+```
+
+Yarn will automatically build the package during installation.
+
+### Option 3: From local build
+
+1. **Build the plugin:**
+
+   ```bash
+   # In the plugin directory
+   yarn build
+   ```
+
+2. **Add to your Backstage backend:**
+
+   In `packages/backend/package.json`, add:
+
+   ```json
+   {
+     "dependencies": {
+       "@internal/backstage-scaffolder-backend-module-gitlab-fork": "file:../../path/to/backstage-gitlab-fork-plugin/dist"
+     }
+   }
+   ```
+
+3. **Install:**
+
+   ```bash
+   yarn install
+   ```
+
+   **Note:** Rebuild the plugin after changes.
 
 ## Setup
 
@@ -208,9 +252,9 @@ Available outputs:
 
 ## Next Steps
 
-- See `examples/` directory for more template patterns
-- Check `README.md` for full API documentation
-- Review `USAGE_SUMMARY.md` for common use cases
+- Check `examples/EXAMPLES.md` for common use cases and advanced patterns
+- See `examples/` directory for complete template examples
+- Review `README.md` for full API documentation
 
 ## Support
 

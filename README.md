@@ -2,6 +2,12 @@
 
 This is a Backstage scaffolder backend module that provides an action to fork repositories on GitLab (including self-hosted instances).
 
+## Documentation
+
+- 🚀 **[Quick Start Guide](QUICK_START.md)** - Get started in 5 minutes
+- 📚 **[Example Templates](examples/EXAMPLES.md)** - Common use cases and patterns
+- 📖 **API Reference** - Complete documentation below
+
 ## Features
 
 - Fork projects on GitLab.com or self-hosted GitLab instances
@@ -15,11 +21,66 @@ This is a Backstage scaffolder backend module that provides an action to fork re
 
 ## Installation
 
+### Option 1: From npm (when published)
+
 Install the package in your Backstage backend:
 
 ```bash
 yarn workspace backend add @internal/backstage-scaffolder-backend-module-gitlab-fork
 ```
+
+### Option 2: From Git Repository (recommended for development)
+
+Install directly from the git repository:
+
+```bash
+# Using SSH
+yarn workspace backend add @internal/backstage-scaffolder-backend-module-gitlab-fork@git+ssh://git@github.com/JJWTimmer/backstage-gitlab-fork-plugin.git
+
+# Or using HTTPS
+yarn workspace backend add @internal/backstage-scaffolder-backend-module-gitlab-fork@https://github.com/JJWTimmer/backstage-gitlab-fork-plugin.git
+
+# Or from a specific branch/tag/commit
+yarn workspace backend add @internal/backstage-scaffolder-backend-module-gitlab-fork@https://github.com/JJWTimmer/backstage-gitlab-fork-plugin.git#main
+```
+
+Alternatively, add directly to `packages/backend/package.json`:
+
+```json
+{
+  "dependencies": {
+    "@internal/backstage-scaffolder-backend-module-gitlab-fork": "github:JJWTimmer/backstage-gitlab-fork-plugin"
+  }
+}
+```
+
+**Note:** Backstage will automatically run the build step from the repository's `package.json` scripts during installation.
+
+### Option 3: From local build (for local development)
+
+1. Build the plugin:
+
+```bash
+yarn build
+```
+
+2. In your Backstage backend's `package.json`, add the dependency using a file path:
+
+```json
+{
+  "dependencies": {
+    "@internal/backstage-scaffolder-backend-module-gitlab-fork": "file:../path/to/backstage-gitlab-fork-plugin/dist"
+  }
+}
+```
+
+3. Install dependencies:
+
+```bash
+yarn install
+```
+
+**Note:** The `dist` folder contains the built CommonJS module that Backstage can import. Make sure to rebuild (`yarn build`) after any changes to the plugin.
 
 ## Configuration
 
